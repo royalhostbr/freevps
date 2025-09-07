@@ -1,0 +1,27 @@
+name: SSHX 24/7 Workflow
+
+on:
+  workflow_dispatch: # Manual trigger
+  schedule:
+    - cron: '0 * * * *' # Optional: runs hourly to refresh
+
+jobs:
+  sshx:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl
+
+      - name: Run SSHX
+        run: |
+          echo "Starting SSHX..."
+          # Keep it running in the background while the runner is active
+          nohup bash -c 'while true; do curl -sSf https://sshx.io/get | sh -s run; sleep 5; done' > sshx.log 2>&1 &
+          
+      - name: Display logs (optional)
+        run: tail -f sshx.log
